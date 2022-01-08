@@ -168,7 +168,8 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
     {
         fseek(in, b * MSS, SEEK_SET);
         //start window
-        for (int i = 0; i < window; i++)
+        int i;
+        for (i = 0; i < window; i++)
         {
             if (b == packets_sent)
                 break;

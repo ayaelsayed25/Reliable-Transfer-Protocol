@@ -48,7 +48,7 @@ public:
     ConnectionInstance(time_t seconds, const char *port, char **filename, long seed, double loss_prob);
     ~ConnectionInstance();
     void tcp_send(void *data, int length, bool is_last);
-    void tcp_receive_ack();
+    void tcp_receive_ack(int number_of_acks);
     void duplicate_ack_handler();
     void timer_handler();
 };

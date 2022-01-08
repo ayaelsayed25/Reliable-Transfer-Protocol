@@ -123,7 +123,7 @@ void SWClient::client_receive(void *data, int *len, bool *is_last)
             /* Send ACK for past packet */
             printf("Sending duplicate Ack \n");
 
-            pack_packet(&send_packet, nullptr, 0, false, seq_no_to_recv);
+            pack_packet(&send_packet, nullptr, 0, false, seq_no_received);
             // print_packet(&send_packet);
             if (send(sockfd, &send_packet, HEADER_SIZE, 0) == -1)
             {

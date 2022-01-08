@@ -239,8 +239,9 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     struct packet recv_packet
     {
     };
+    uint8_t numbytes;
     for(int i=0; i<number_of_acks; i++){
-        uint8_t numbytes = recv(connection_sockfd, buf, MAX_PACKET_SIZE, 0);
+        numbytes = recv(connection_sockfd, buf, MAX_PACKET_SIZE, 0);
 
         if (numbytes == -1)
         {
@@ -267,6 +268,27 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
             b += received;
         }
     }
+    printf("HMMM");
+
+    // //timeout
+    // perror("recv");
+
+    bool is_corrupt;
+    parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
+    //is_corrupt is discarded from client ??
+    // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
+    printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
+    uint16_t expected = end - start;
+    uint16_t received = recv_packet.seq_no - start + 1;
+
+    printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
+    printf("expected %d, received %d\n", expected, received);
+
+    //update congestion window, start, end
+    start = recv_packet.seq_no + 1;
+    curr_seq_no = start;
+    end = start + CWND;
+    b += received;
 }
 
 // void ConnectionInstance::timer_handler()

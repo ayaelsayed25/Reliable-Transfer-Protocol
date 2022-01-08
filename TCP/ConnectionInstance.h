@@ -23,6 +23,7 @@ private:
     bool slow_start = false;
     uint32_t start = 0;
     uint32_t end = 0;
+    uint32_t window = RWND;
     struct timeval tv
     {
     };

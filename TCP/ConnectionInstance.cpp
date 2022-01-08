@@ -163,30 +163,29 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
     //GO-BACK-N
     //buffer iterator
     start = 0;
-    end = CWND;
+    end = window;
     while (b < packets_sent)
     {
         fseek(in, b * MSS, SEEK_SET);
         //start window
-        for (int i = 0; i < CWND; i++)
+        for (int i = 0; i < window; i++)
         {
             if (b == packets_sent)
                 break;
             num_read = fread(packet, sizeof(uint8_t), MSS, in);
             tcp_send(packet, MSS, feof(in));
         }
-
         //after window
         //update cwnd
         window = CWND < RWND ? CWND : RWND;
         printf("\nEnd of window\n\n");
-        tcp_receive_ack();
+        tcp_receive_ack(i);
     }
     if (last_packet_size > 0)
     {
         num_read = fread(packet, sizeof(uint8_t), last_packet_size, in);
         tcp_send(packet, last_packet_size, true);
-        tcp_receive_ack();
+        tcp_receive_ack(1);
     }
     fclose(in);
 }
@@ -227,7 +226,7 @@ void ConnectionInstance::next_seq_no()
     curr_seq_no = curr_seq_no + 1;
 }
 
-void ConnectionInstance::tcp_receive_ack()
+void ConnectionInstance::tcp_receive_ack(int number_of_acks)
 {
     //reset timer
     if (setsockopt(connection_sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv) == -1)
@@ -239,31 +238,33 @@ void ConnectionInstance::tcp_receive_ack()
     struct packet recv_packet
     {
     };
-    uint8_t numbytes = recv(connection_sockfd, buf, MAX_PACKET_SIZE, 0);
+    for(int i=0; i<number_of_acks; i++){
+        uint8_t numbytes = recv(connection_sockfd, buf, MAX_PACKET_SIZE, 0);
 
-    if (numbytes == -1)
-    {
-        //timeout
-        perror("recv");
-    }
-    else
-    {
-        bool is_corrupt;
-        parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
-        //is_corrupt is discarded from client ??
-        // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
-        printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
-        uint16_t expected = end - start;
-        uint16_t received = recv_packet.seq_no - start + 1;
+        if (numbytes == -1)
+        {
+            //timeout
+            perror("recv");
+        }
+        else
+        {
+            bool is_corrupt;
+            parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
+            //is_corrupt is discarded from client ??
+            // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
+            printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
+            uint16_t expected = end - start;
+            uint16_t received = recv_packet.seq_no - start + 1;
 
-        printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
-        printf("expected %d, received %d\n", expected, received);
+            printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
+            printf("expected %d, received %d\n", expected, received);
 
-        //update congestion window, start, end
-        start = recv_packet.seq_no;
-        curr_seq_no = start;
-        end = start + CWND;
-        b += received;
+            //update congestion window, start, end
+            start = recv_packet.seq_no;
+            curr_seq_no = start;
+            end = start + window;
+            b += received;
+        }
     }
 }
 

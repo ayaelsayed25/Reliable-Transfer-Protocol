@@ -1,0 +1,247 @@
+0	3	transmitting 0
+0	3	client correctly received 0 with 508 bytes
+1	3	lost 1
+1	3	lost 2
+2	3	lost 1
+2	3	transmitting 2
+2	3	lost 3
+2	3	transmitting 4
+3	3	lost 1
+3	3	transmitting 2
+3	3	lost 3
+3	3	transmitting 4
+3	3	transmitting 5
+4	3	transmitting 1
+4	3	lost 2
+4	3	lost 3
+4	3	transmitting 4
+4	3	transmitting 5
+4	3	client correctly received 1 with 508 bytes
+5	3	transmitting 2
+5	3	lost 3
+5	3	lost 4
+5	3	lost 5
+5	3	transmitting 6
+5	3	client correctly received 2 with 508 bytes
+6	3	lost 3
+6	3	lost 4
+6	3	transmitting 5
+6	3	lost 6
+6	3	transmitting 7
+7	3	lost 3
+7	3	lost 4
+7	3	transmitting 5
+7	3	transmitting 6
+7	3	lost 7
+8	3	transmitting 3
+8	3	lost 4
+8	3	lost 5
+8	3	lost 6
+8	3	lost 7
+8	3	client correctly received 3 with 508 bytes
+9	3	lost 4
+9	3	lost 5
+9	3	transmitting 6
+9	3	transmitting 7
+9	3	transmitting 8
+10	3	lost 4
+10	3	lost 5
+10	3	lost 6
+10	3	transmitting 7
+10	3	lost 8
+11	3	transmitting 4
+11	3	transmitting 5
+11	3	transmitting 6
+11	3	transmitting 7
+11	3	lost 8
+11	3	client correctly received 4 with 508 bytes
+11	3	client correctly received 5 with 508 bytes
+11	3	client correctly received 6 with 508 bytes
+11	3	client correctly received 7 with 508 bytes
+12	3	transmitting 8
+12	3	transmitting 9
+12	3	transmitting 10
+12	3	transmitting 11
+12	3	transmitting 12
+12	3	transmitting 13
+12	3	transmitting 14
+12	3	transmitting 15
+12	3	transmitting 16
+12	3	lost 17
+12	3	client correctly received 8 with 508 bytes
+12	3	client correctly received 9 with 508 bytes
+12	3	client correctly received 10 with 508 bytes
+12	3	client correctly received 11 with 508 bytes
+12	3	client correctly received 12 with 508 bytes
+12	3	client correctly received 13 with 508 bytes
+12	3	client correctly received 14 with 508 bytes
+12	3	client correctly received 15 with 508 bytes
+12	3	client correctly received 16 with 508 bytes
+13	3	transmitting 17
+13	3	lost 18
+13	3	lost 19
+13	3	transmitting 20
+13	3	transmitting 21
+13	3	lost 22
+13	3	transmitting 23
+13	3	transmitting 24
+13	3	transmitting 25
+13	3	transmitting 26
+13	3	transmitting 27
+13	3	transmitting 28
+13	3	lost 29
+13	3	lost 30
+13	3	transmitting 31
+13	3	transmitting 32
+13	3	client correctly received 17 with 508 bytes
+14	3	lost 18
+14	3	lost 19
+14	3	lost 20
+14	3	lost 21
+14	3	lost 22
+14	3	lost 23
+14	3	lost 24
+14	3	transmitting 25
+14	3	lost 26
+14	3	lost 27
+14	3	lost 28
+14	3	transmitting 29
+14	3	transmitting 30
+14	3	transmitting 31
+14	3	lost 32
+14	3	transmitting 33
+15	3	lost 18
+15	3	transmitting 19
+15	3	transmitting 20
+15	3	transmitting 21
+15	3	transmitting 22
+15	3	transmitting 23
+15	3	transmitting 24
+15	3	transmitting 25
+15	3	lost 26
+15	3	lost 27
+15	3	transmitting 28
+15	3	lost 29
+15	3	lost 30
+15	3	transmitting 31
+15	3	transmitting 32
+15	3	transmitting 33
+16	3	transmitting 18
+16	3	transmitting 19
+16	3	lost 20
+16	3	lost 21
+16	3	transmitting 22
+16	3	lost 23
+16	3	lost 24
+16	3	lost 25
+16	3	transmitting 26
+16	3	lost 27
+16	3	transmitting 28
+16	3	transmitting 29
+16	3	lost 30
+16	3	transmitting 31
+16	3	lost 32
+16	3	lost 33
+16	3	client correctly received 18 with 508 bytes
+16	3	client correctly received 19 with 508 bytes
+17	3	transmitting 20
+17	3	transmitting 21
+17	3	transmitting 22
+17	3	lost 23
+17	3	lost 24
+17	3	transmitting 25
+17	3	transmitting 26
+17	3	transmitting 27
+17	3	transmitting 28
+17	3	lost 29
+17	3	transmitting 30
+17	3	lost 31
+17	3	lost 32
+17	3	lost 33
+17	3	client correctly received 20 with 508 bytes
+17	3	client correctly received 21 with 508 bytes
+17	3	client correctly received 22 with 508 bytes
+18	3	transmitting 23
+18	3	lost 24
+18	3	transmitting 25
+18	3	transmitting 26
+18	3	transmitting 27
+18	3	lost 28
+18	3	lost 29
+18	3	transmitting 30
+18	3	transmitting 31
+18	3	lost 32
+18	3	transmitting 33
+18	3	client correctly received 23 with 508 bytes
+19	3	lost 24
+19	3	lost 25
+19	3	transmitting 26
+19	3	lost 27
+19	3	transmitting 28
+19	3	transmitting 29
+19	3	transmitting 30
+19	3	lost 31
+19	3	lost 32
+19	3	lost 33
+20	4	transmitting 24
+20	4	transmitting 25
+20	4	transmitting 26
+20	4	transmitting 27
+20	4	lost 28
+20	4	lost 29
+20	4	lost 30
+20	4	transmitting 31
+20	4	lost 32
+20	4	lost 33
+20	4	client correctly received 24 with 508 bytes
+20	4	client correctly received 25 with 508 bytes
+20	4	client correctly received 26 with 508 bytes
+20	4	client correctly received 27 with 508 bytes
+21	4	lost 28
+21	4	transmitting 29
+21	4	lost 30
+21	4	lost 31
+21	4	transmitting 32
+21	4	lost 33
+22	4	lost 28
+22	4	transmitting 29
+22	4	lost 30
+22	4	transmitting 31
+22	4	lost 32
+22	4	transmitting 33
+23	4	lost 28
+23	4	transmitting 29
+23	4	transmitting 30
+23	4	transmitting 31
+23	4	lost 32
+23	4	lost 33
+24	4	transmitting 28
+24	4	lost 29
+24	4	transmitting 30
+24	4	lost 31
+24	4	lost 32
+24	4	lost 33
+24	4	client correctly received 28 with 508 bytes
+25	4	lost 29
+25	4	lost 30
+25	4	transmitting 31
+25	4	lost 32
+25	4	transmitting 33
+26	4	transmitting 29
+26	4	lost 30
+26	4	transmitting 31
+26	4	transmitting 32
+26	4	transmitting 33
+26	4	client correctly received 29 with 508 bytes
+27	4	transmitting 30
+27	4	transmitting 31
+27	4	lost 32
+27	4	transmitting 33
+27	4	client correctly received 30 with 508 bytes
+27	4	client correctly received 31 with 508 bytes
+28	4	lost 32
+28	4	lost 33
+29	5	transmitting 32
+29	5	transmitting 33
+29	5	client correctly received 32 with 508 bytes
+29	5	client correctly received 33 with 493 bytes

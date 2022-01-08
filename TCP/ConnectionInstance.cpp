@@ -270,7 +270,7 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
         CWND = 1;
         state = 0;
     }
-    //duplicate ack
+    //3 duplicate ack
     else if (expected - received >= 3)
     {
         if (state = 0 || state == 1)
@@ -283,12 +283,26 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     }
     else
     {
-        if (state == 1)
+        if(state == 0){
+            CWND += acks_received;
+        }
+        else if (state == 1)
             CWND++;
-        // else if(state == 2){
-        //     CWND +=
-        // }
+        else if(state == 2)
+        {
+            if(acks_received - received > 0)
+            {
+                CWND += acks_received;
+            }
+            else
+            {
+                CWND = ssthresh;
+                state = 1;
+            }
+        }//duplicate acks
     }
+    if(state == 0 && CWND >= ssthresh)
+        state = 1;
 
     printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
     printf("expected %d, received %d\n", expected, received);

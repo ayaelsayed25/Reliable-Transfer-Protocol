@@ -1,12 +1,12 @@
 #ifndef TCP_LOGGER_H
 #define TCP_LOGGER_H
 
-
 #include <cstdio>
 #include <cstdint>
 #include <ctime>
 
-class Logger {
+class Logger
+{
 
 private:
     FILE *logfile;
@@ -20,7 +20,7 @@ public:
     void logTimeout(uint32_t seq_no);
     void advanceRound();
     void logACK(uint32_t seq_no, int size);
+    void window(int size);
 };
-
 
 #endif //TCP_LOGGER_H

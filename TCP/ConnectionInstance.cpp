@@ -239,6 +239,8 @@ void ConnectionInstance::next_seq_no()
 
 void ConnectionInstance::tcp_receive_ack(int number_of_acks)
 {
+    logger.window(CWND);
+
     //reset timer
     if (setsockopt(connection_sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv) == -1)
     {

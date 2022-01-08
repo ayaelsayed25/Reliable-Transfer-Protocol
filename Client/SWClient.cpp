@@ -98,6 +98,7 @@ void SWClient::client_receive(void *data, int *len, bool *is_last)
         bool is_corrupt;
         parse_packet(&recv_packet, &is_corrupt, is_last, buf, numbytes);
         printf("Received %d Request %d\n", recv_packet.seq_no, seq_no_to_recv);
+        printf("size %d\n", recv_packet.len);
 
         if (!is_corrupt && recv_packet.seq_no == seq_no_to_recv)
         {

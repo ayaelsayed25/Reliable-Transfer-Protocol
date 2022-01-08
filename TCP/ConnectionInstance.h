@@ -18,7 +18,8 @@ private:
     struct sockaddr_storage their_addr;
     double loss_prob;
     uint32_t duplicate_ack = 0;
-    uint32_t CWND = RWND;
+    uint32_t CWND = 8;
+    uint32_t packets_sent;
     bool three_duplicate = false;
     bool slow_start = false;
     uint32_t start = 0;

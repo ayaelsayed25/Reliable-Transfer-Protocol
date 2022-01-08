@@ -133,8 +133,8 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
     }*/
 
     /* Set timeout */
-    tv.tv_sec = TIMEOUT_DELAY_SEC;
-    tv.tv_usec = 0;
+    tv.tv_sec = 0;
+    tv.tv_usec = 500;
     /*if(bind(connection_sockfd, p.ai_addr, p.ai_addrlen) == -1){
         close(connection_sockfd);
         perror("child: bind");
@@ -151,14 +151,16 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
     FILE *in = fopen(*filename, "r");
     int num_read;
     uint8_t packet[MSS];
-    uint32_t window = CWND < RWND ? CWND : RWND;
     uint32_t last_packet_size = 0;
 
     fseek(in, 0L, SEEK_END);
     int file_size = ftell(in);
     rewind(in);
-    uint32_t packets_sent = file_size / MSS;
+    packets_sent = file_size / MSS;
     last_packet_size = file_size % MSS;
+    if (last_packet_size > 0)
+        packets_sent++;
+    printf("laaaaast size %d\n", last_packet_size);
     printf("File size is %d bytes,, Sending it in %d packets \n", file_size, packets_sent);
     //GO-BACK-N
     //buffer iterator
@@ -171,22 +173,15 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
         int i;
         for (i = 0; i < window; i++)
         {
-            if (b == packets_sent)
+            if (curr_seq_no == end)
                 break;
             num_read = fread(packet, sizeof(uint8_t), MSS, in);
-            tcp_send(packet, MSS, feof(in));
+            tcp_send(packet, curr_seq_no == (packets_sent - 1) ? last_packet_size : MSS, feof(in));
         }
         //after window
-        //update cwnd
-        window = CWND < RWND ? CWND : RWND;
+
         printf("\nEnd of window\n\n");
         tcp_receive_ack(window);
-    }
-    if (last_packet_size > 0)
-    {
-        num_read = fread(packet, sizeof(uint8_t), last_packet_size, in);
-        tcp_send(packet, last_packet_size, true);
-        tcp_receive_ack(1);
     }
     fclose(in);
 }
@@ -239,14 +234,17 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     struct packet recv_packet
     {
     };
+    recv_packet.seq_no = start - 1;
     uint8_t numbytes;
-    for(int i=0; i<number_of_acks; i++){
+    for (int i = 0; i < number_of_acks; i++)
+    {
         numbytes = recv(connection_sockfd, buf, MAX_PACKET_SIZE, 0);
 
         if (numbytes == -1)
         {
             //timeout
-            perror("recv");
+            // perror("recv");
+            break;
         }
         else
         {
@@ -256,39 +254,34 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
             // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
         }
     }
-    printf("HMMM");
-
-    // //timeout
-    // perror("recv");
 
     printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
     uint16_t expected = end - start;
     uint16_t received = recv_packet.seq_no - start + 1;
+    //timeout
+    if (received == 0)
+    {
+        printf("TIMEOUT\n");
+    }
+    //duplicate ack
+    if (expected - received >= 3)
+    {
+        printf("DUP ACKKKKKK\n");
+    }
 
     printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
     printf("expected %d, received %d\n", expected, received);
+    //update cwnd
+    window = CWND < RWND ? CWND : RWND;
     //is_corrupt is discarded from client ??
     // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
     //update congestion window, start, end
     start = recv_packet.seq_no + 1;
     curr_seq_no = start;
-    end = start + CWND;
+    end = start + window;
+    end = packets_sent < end ? packets_sent : end;
     b += received;
 }
-
-// void ConnectionInstance::timer_handler()
-// {
-//     //timeout
-
-//     if (acks_reveived == 0)
-//     {
-//     }
-//     else if (three_duplicate)
-//     {
-//         CWND = CWND >> 1;
-//     }
-//     three_duplicate = false;
-// }
 
 ConnectionInstance ::~ConnectionInstance()
 {

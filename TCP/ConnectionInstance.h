@@ -48,6 +48,7 @@ public:
     ~ConnectionInstance();
     void tcp_send(void *data, int length, bool is_last);
     void tcp_receive_ack();
+    void duplicate_ack_handler();
     void timer_handler();
 };
 

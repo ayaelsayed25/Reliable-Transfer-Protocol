@@ -180,7 +180,7 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
         //update cwnd
         window = CWND < RWND ? CWND : RWND;
         printf("\nEnd of window\n\n");
-        tcp_receive_ack(i);
+        tcp_receive_ack(window);
     }
     if (last_packet_size > 0)
     {
@@ -254,18 +254,6 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
             parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
             //is_corrupt is discarded from client ??
             // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
-            printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
-            uint16_t expected = end - start;
-            uint16_t received = recv_packet.seq_no - start + 1;
-
-            printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
-            printf("expected %d, received %d\n", expected, received);
-
-            //update congestion window, start, end
-            start = recv_packet.seq_no;
-            curr_seq_no = start;
-            end = start + window;
-            b += received;
         }
     }
     printf("HMMM");
@@ -273,17 +261,14 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     // //timeout
     // perror("recv");
 
-    bool is_corrupt;
-    parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
-    //is_corrupt is discarded from client ??
-    // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
     printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
     uint16_t expected = end - start;
     uint16_t received = recv_packet.seq_no - start + 1;
 
     printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
     printf("expected %d, received %d\n", expected, received);
-
+    //is_corrupt is discarded from client ??
+    // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
     //update congestion window, start, end
     start = recv_packet.seq_no + 1;
     curr_seq_no = start;

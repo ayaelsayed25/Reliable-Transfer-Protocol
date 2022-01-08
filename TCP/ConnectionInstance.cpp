@@ -156,47 +156,59 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
     FILE *in = fopen(*filename, "r");
     int num_read;
     uint8_t buffer[BUFFER_SIZE];
-    uint8_t packet[500];
-    uint32_t start = 0;
+    uint8_t packet[500];    
     uint32_t window = CWND < RWND ? CWND : RWND;
-    uint32_t end = window;
     uint32_t last_packet_size = 0;
-    num_read = fread(buffer, sizeof(uint8_t), (end - start) * 500, in);
+    int i = 0;
     //GO-BACK-N
     while (!feof(in))
     {
-        printf("Beginning of window");
+        num_read = fread(buffer, sizeof(uint8_t), RWND * 500, in);
+        printf("Beginning of window %d\n", num_read);
         if (num_read < (end - start) * 500)
         {
             end = num_read / 500;
             last_packet_size = num_read % 500;
         }
         /* Restart timer */
-        for (int i = start; i < end; i += 1)
-        {
-            for (int j = 0; j < 500; j++)
+        while(true){
+            uint32_t diff = end - start;
+            i = start;
+            if(i == RWND)
             {
-                packet[j] = buffer[i * 500 + j];
+                i = 0;
+                break;
             }
-            tcp_send(packet, 500, feof(in));
-            tcp_receive_ack();
+            uint32_t k;
+            for(k = i; k< diff; k++)
+            {
+                for (uint32_t j = 0; j < 500; j++)
+                {
+                    packet[j] = buffer[i * 500 + j];
+                }
+                tcp_send(packet, 500, feof(in));
+                tcp_receive_ack();
+                ++i;
+            }
+            if(i == RWND)
+            {
+                i = 0;
+                break;
+            }
+            window = CWND < RWND ? CWND : RWND;
+            start = curr_seq_no;
+            end = start + window;
         }
-        if (last_packet_size > 0)
-        {
-            tcp_send(packet, last_packet_size, feof(in));
-            tcp_receive_ack();
-        }
-
-        //after window
-        //update cwnd
-        window = CWND < RWND ? CWND : RWND;
-        //last acknowledged packet
-        num_read = fread(buffer, sizeof(uint8_t), (last_ack - start) * 500, in);
-        curr_seq_no = (last_ack + 1) % RWND;
-        start = last_ack + 1;
-        //update buffer
-        end = start + window;
-        printf("\nwindoww endd\n");
+        // if (last_packet_size > 0)
+        // {
+        //     for (uint32_t j = 0; j < last_packet_size; j++)
+        //     {
+        //         packet[j] = buffer[(end+1) * 500 + j];
+        //     }
+        //     tcp_send(packet, last_packet_size, feof(in));
+        //     tcp_receive_ack();
+        // }
+        printf("windoww end\n\n");
     }
     fclose(in);
 }
@@ -247,12 +259,10 @@ void ConnectionInstance::tcp_receive_ack()
 
     if (numbytes == -1)
     {
-        //number of ACKs received less than sent
         perror("recv");
     }
     else
     {
-
         bool is_corrupt;
         parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
         //is_corrupt is discarded from client ??
@@ -261,35 +271,49 @@ void ConnectionInstance::tcp_receive_ack()
 
         if (recv_packet.seq_no != curr_seq_no)
         {
-            // if (prev_ack == recv_packet.seq_no)
-            //     duplicate_ack++;
+            if (last_ack == recv_packet.seq_no)
+                duplicate_ack++;
             // else
             //     duplicate_ack = 0;
-            // if (duplicate_ack == 3)
-            //     three_duplicate = true;
+            //       three_duplicate = false;
+            if (duplicate_ack == 3)
+            {
+                printf("three duplicate acks");
+                duplicate_ack_handler();
+            }
             // //send same packet
             //     continue; //not exactly how the FSM works but for the time being
         }
         else
         {
-            last_ack = curr_seq_no;
+            last_ack = (last_ack + 1) % RWND;
         }
         next_seq_no();
     }
 }
 
+
+void ConnectionInstance::duplicate_ack_handler()
+{
+    uint32_t window = RWND;
+    curr_seq_no = (last_ack + 1) % RWND;
+    start = curr_seq_no;
+    end = start + window;
+    duplicate_ack = 0;
+}
+
 void ConnectionInstance::timer_handler()
 {
     //timeout
-
-    if (acks_reveived == 0)
-    {
-    }
-    else if (three_duplicate)
-    {
-        CWND = CWND >> 1;
-    }
-    three_duplicate = false;
+    curr_seq_no = (last_ack + 1) % RWND;
+    // if (acks_reveived == 0)
+    // {
+    // }
+    // else if (three_duplicate)
+    // {
+    //     CWND = CWND >> 1;
+    // }
+    duplicate_ack = 0;
 }
 
 ConnectionInstance ::~ConnectionInstance()

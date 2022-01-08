@@ -19,6 +19,8 @@ private:
     uint32_t CWND = RWND;
     bool three_duplicate = false;
     uint32_t last_ack = 0;
+    uint32_t start = 0;
+    uint32_t end = CWND;
     /**
      * Resolve the server's address into @param p,
      * create a socket @param listener_sockfd
@@ -40,6 +42,7 @@ public:
     ~ConnectionInstance();
     void tcp_send(void *data, int length, bool is_last);
     void tcp_receive_ack();
+    void duplicate_ack_handler();
     void timer_handler();
 };
 

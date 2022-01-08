@@ -308,9 +308,9 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
     printf("expected %d, received %d\n", expected, received);
     //update cwnd
+    
     window = CWND < RWND ? CWND : RWND;
-    //is_corrupt is discarded from client ??
-    // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
+    printf("new window: %d\n", window);
     //update congestion window, start, end
     start = recv_packet.seq_no + 1;
     curr_seq_no = start;

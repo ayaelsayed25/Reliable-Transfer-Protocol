@@ -97,6 +97,7 @@ void SWClient::client_receive(void *data, int *len, bool *is_last)
         // TODO checksum
         bool is_corrupt;
         parse_packet(&recv_packet, &is_corrupt, is_last, buf, numbytes);
+        printf("Received %d Request %d\n", recv_packet.seq_no, seq_no_to_recv);
 
         if (!is_corrupt && recv_packet.seq_no == seq_no_to_recv)
         {
@@ -107,7 +108,6 @@ void SWClient::client_receive(void *data, int *len, bool *is_last)
             pack_packet(&send_packet, nullptr, 0, false, seq_no_to_recv);
             //print_packet(&send_packet);
             next_recv_state();
-            printf("Received %d Request %d\n", recv_packet.seq_no, seq_no_to_recv);
             if (send(sockfd, &send_packet, HEADER_SIZE, 0) == -1)
             {
                 perror("send");
@@ -123,7 +123,7 @@ void SWClient::client_receive(void *data, int *len, bool *is_last)
             /* Send ACK for past packet */
             printf("Sending duplicate Ack \n");
 
-            pack_packet(&send_packet, nullptr, 0, false, seq_no_received);
+            pack_packet(&send_packet, nullptr, 0, false, seq_no_to_recv);
             // print_packet(&send_packet);
             if (send(sockfd, &send_packet, HEADER_SIZE, 0) == -1)
             {

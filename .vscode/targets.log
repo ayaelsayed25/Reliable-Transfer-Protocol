@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Jan  8 01:21:57 2022
+# Make data base, printed on Sat Jan  8 07:28:21 2022
 
 # Variables
 
@@ -123,7 +123,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 52064
+GIO_LAUNCHED_DESKTOP_FILE_PID = 99840
 # automatic
 %F = $(notdir $%)
 # environment
@@ -189,7 +189,7 @@ SHLVL = 0
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-030bc74a-ffba-4111-aca5-6a403c477da4.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-3bc8dbc6-9882-4089-bc90-a1aa49f16800.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -273,7 +273,7 @@ LC_ADDRESS = ar_EG.UTF-8
 # environment
 LANG = C
 # environment
-VSCODE_PID = 52108
+VSCODE_PID = 99884
 # variable set hash-table stats:
 # Load=131/1024=13%, Rehash=0, Collisions=24/153=16%
 
@@ -283,9 +283,9 @@ VSCODE_PID = 52108
 
 # Directories
 
-# . (device 66310, inode 8271014): 5 files, no impossibilities.
+# . (device 66310, inode 8271014): 6 files, no impossibilities.
 
-# 5 files, no impossibilities in 1 directories.
+# 6 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -306,6 +306,7 @@ Makefile:
 #  File does not exist.
 #  File has been updated.
 #  Failed to be updated.
+ 
 
 # Not a target:
 makefile:
@@ -328,7 +329,6 @@ GNUmakefile:
 #  Failed to be updated.
 
 # files hash-table stats:
- 
 # Load=6/1024=1%, Rehash=0, Collisions=0/15=0%
 # VPATH Search Paths
 
@@ -336,12 +336,12 @@ GNUmakefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 13 / storage = 109 B / avg = 8 B
-# current buf: size = 8162 B / used = 109 B / count = 13 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 14 / storage = 114 B / avg = 8 B
+# current buf: size = 8162 B / used = 114 B / count = 14 / avg = 8 B
 
-# strcache performance: lookups = 16 / hit rate = 18%
+# strcache performance: lookups = 17 / hit rate = 17%
 # hash-table stats:
-# Load=13/8192=0%, Rehash=0, Collisions=1/16=6%
-# Finished Make data base on Sat Jan  8 01:21:57 2022
+# Load=14/8192=0%, Rehash=0, Collisions=1/17=6%
+# Finished Make data base on Sat Jan  8 07:28:21 2022
 
  

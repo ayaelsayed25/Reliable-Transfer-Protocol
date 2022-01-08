@@ -8,8 +8,7 @@
 #define RWND 8
 #define BUFFER_SIZE RWND * 500
 #define MSS 500
-#define TIMEOUT_DELAY_SEC 1;
-
+#define TIMEOUT_DELAY_SEC 1
 class ConnectionInstance
 {
 private:
@@ -18,13 +17,18 @@ private:
     struct sockaddr_storage their_addr;
     double loss_prob;
     uint32_t duplicate_ack = 0;
-    uint32_t CWND = 8;
+    uint32_t CWND = 1;
     uint32_t packets_sent;
     bool three_duplicate = false;
-    bool slow_start = false;
+    uint32_t ssthresh = 132;
+    uint8_t state = 0;
+    //state 0 : slow start
+    //state 1 : congestion avoidance
+    //state 2 : fast recovery
+
     uint32_t start = 0;
     uint32_t end = 0;
-    uint32_t window = RWND;
+    uint32_t window = 1;
     struct timeval tv
     {
     };

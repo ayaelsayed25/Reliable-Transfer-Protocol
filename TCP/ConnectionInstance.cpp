@@ -235,6 +235,7 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     {
     };
     recv_packet.seq_no = start - 1;
+    u_int32_t acks_received = 0;
     uint8_t numbytes;
     for (int i = 0; i < number_of_acks; i++)
     {
@@ -250,8 +251,11 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
         {
             bool is_corrupt;
             parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
-            //is_corrupt is discarded from client ??
-            // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
+            // if (state == 0)
+            // {
+            //     CWND += 1;
+            // }
+            acks_received++;
         }
     }
 
@@ -259,14 +263,31 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     uint16_t expected = end - start;
     uint16_t received = recv_packet.seq_no - start + 1;
     //timeout
-    if (received == 0)
+    if (acks_received == 0)
     {
         printf("TIMEOUT\n");
+        ssthresh = CWND / 2;
+        CWND = 1;
+        state = 0;
     }
     //duplicate ack
-    if (expected - received >= 3)
+    else if (expected - received >= 3)
     {
+        if (state = 0 || state == 1)
+        {
+            state = 2;
+            ssthresh = CWND / 2;
+            CWND = ssthresh + 3;
+        }
         printf("DUP ACKKKKKK\n");
+    }
+    else
+    {
+        if (state == 1)
+            CWND++;
+        // else if(state == 2){
+        //     CWND +=
+        // }
     }
 
     printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);

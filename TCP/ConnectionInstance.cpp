@@ -3,6 +3,9 @@
 #include <arpa/inet.h>
 #include "ConnectionInstance.h"
 #include <stdlib.h>
+#include <fstream>
+
+unsigned int b = 0;
 
 void *ConnectionInstance ::get_in_addr(struct sockaddr *sa)
 {
@@ -130,16 +133,8 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
     }*/
 
     /* Set timeout */
-    struct timeval timeout
-    {
-        seconds, 0
-    };
-    if (setsockopt(connection_sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout) == -1)
-    {
-        perror("setsockopt");
-        exit(1);
-    }
-
+    tv.tv_sec = TIMEOUT_DELAY_SEC;
+    tv.tv_usec = 0;
     /*if(bind(connection_sockfd, p.ai_addr, p.ai_addrlen) == -1){
         close(connection_sockfd);
         perror("child: bind");
@@ -155,57 +150,52 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
     //begin sending file
     FILE *in = fopen(*filename, "r");
     int num_read;
-    uint8_t buffer[BUFFER_SIZE];
-    uint8_t packet[500];
-    uint32_t start = 0;
+    uint8_t packet[MSS];
     uint32_t window = CWND < RWND ? CWND : RWND;
-    uint32_t end = window;
     uint32_t last_packet_size = 0;
-    num_read = fread(buffer, sizeof(uint8_t), (end - start) * 500, in);
+
+    fseek(in, 0L, SEEK_END);
+    int file_size = ftell(in);
+    rewind(in);
+    uint32_t packets_sent = file_size / MSS;
+    last_packet_size = file_size % MSS;
+    printf("File size is %d bytes,, Sending it in %d packets \n", file_size, packets_sent);
     //GO-BACK-N
-    while (!feof(in))
+    //buffer iterator
+    start = 0;
+    end = CWND;
+    while (b < packets_sent)
     {
-        printf("Beginning of window");
-        if (num_read < (end - start) * 500)
+        fseek(in, b * MSS, SEEK_SET);
+        //start window
+        for (int i = 0; i < CWND; i++)
         {
-            end = num_read / 500;
-            last_packet_size = num_read % 500;
-        }
-        /* Restart timer */
-        for (int i = start; i < end; i += 1)
-        {
-            for (int j = 0; j < 500; j++)
-            {
-                packet[j] = buffer[i * 500 + j];
-            }
-            tcp_send(packet, 500, feof(in));
-            tcp_receive_ack();
-        }
-        if (last_packet_size > 0)
-        {
-            tcp_send(packet, last_packet_size, feof(in));
-            tcp_receive_ack();
+            if (b == packets_sent)
+                break;
+            num_read = fread(packet, sizeof(uint8_t), MSS, in);
+            tcp_send(packet, MSS, feof(in));
         }
 
         //after window
         //update cwnd
         window = CWND < RWND ? CWND : RWND;
-        //last acknowledged packet
-        num_read = fread(buffer, sizeof(uint8_t), (last_ack - start) * 500, in);
-        curr_seq_no = (last_ack + 1) % RWND;
-        start = last_ack + 1;
-        //update buffer
-        end = start + window;
-        printf("\nwindoww endd\n");
+        printf("\nEnd of window\n\n");
+        tcp_receive_ack();
+    }
+    if (last_packet_size > 0)
+    {
+        num_read = fread(packet, sizeof(uint8_t), last_packet_size, in);
+        tcp_send(packet, last_packet_size, true);
+        tcp_receive_ack();
     }
     fclose(in);
 }
 
 void ConnectionInstance ::tcp_send(void *data, int len, bool is_last)
 {
-    if (len > 500)
+    if (len > MSS)
     {
-        fprintf(stderr, "Length of data to end exceeds 500 %d\n", len);
+        fprintf(stderr, "Length of data to end exceeds MSS %d\n", len);
         exit(1);
     }
 
@@ -228,17 +218,23 @@ void ConnectionInstance ::tcp_send(void *data, int len, bool is_last)
     {
         perror("send");
     }
+    next_seq_no();
 }
 
 void ConnectionInstance::next_seq_no()
 {
     //implement for window size
-    curr_seq_no = (curr_seq_no + 1) % RWND;
+    curr_seq_no = curr_seq_no + 1;
 }
 
 void ConnectionInstance::tcp_receive_ack()
 {
-
+    //reset timer
+    if (setsockopt(connection_sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv) == -1)
+    {
+        perror("setsockopt");
+        exit(1);
+    }
     void *buf[MAX_PACKET_SIZE];
     struct packet recv_packet
     {
@@ -247,50 +243,43 @@ void ConnectionInstance::tcp_receive_ack()
 
     if (numbytes == -1)
     {
-        //number of ACKs received less than sent
+        //timeout
         perror("recv");
     }
     else
     {
-
         bool is_corrupt;
         parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
         //is_corrupt is discarded from client ??
         // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
-        printf("received packet %d\n", recv_packet.seq_no);
+        printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
+        uint16_t expected = end - start;
+        uint16_t received = recv_packet.seq_no - start + 1;
 
-        if (recv_packet.seq_no != curr_seq_no)
-        {
-            // if (prev_ack == recv_packet.seq_no)
-            //     duplicate_ack++;
-            // else
-            //     duplicate_ack = 0;
-            // if (duplicate_ack == 3)
-            //     three_duplicate = true;
-            // //send same packet
-            //     continue; //not exactly how the FSM works but for the time being
-        }
-        else
-        {
-            last_ack = curr_seq_no;
-        }
-        next_seq_no();
+        printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
+        printf("expected %d, received %d\n", expected, received);
+
+        //update congestion window, start, end
+        start = recv_packet.seq_no;
+        curr_seq_no = start;
+        end = start + CWND;
+        b += received;
     }
 }
 
-void ConnectionInstance::timer_handler()
-{
-    //timeout
+// void ConnectionInstance::timer_handler()
+// {
+//     //timeout
 
-    if (acks_reveived == 0)
-    {
-    }
-    else if (three_duplicate)
-    {
-        CWND = CWND >> 1;
-    }
-    three_duplicate = false;
-}
+//     if (acks_reveived == 0)
+//     {
+//     }
+//     else if (three_duplicate)
+//     {
+//         CWND = CWND >> 1;
+//     }
+//     three_duplicate = false;
+// }
 
 ConnectionInstance ::~ConnectionInstance()
 {

@@ -168,6 +168,7 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
     end = window;
     while (b < packets_sent)
     {
+        window = CWND < RWND ? CWND : RWND;
         fseek(in, b * MSS, SEEK_SET);
         //start window
         int i;
@@ -273,7 +274,7 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     //3 duplicate ack
     else if (expected - received >= 3)
     {
-        if (state = 0 || state == 1)
+        if (state == 0 || state == 1)
         {
             state = 2;
             ssthresh = CWND / 2;

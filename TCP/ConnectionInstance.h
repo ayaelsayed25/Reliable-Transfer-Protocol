@@ -4,9 +4,9 @@
 #include "packet_utils.h"
 #include "sys/types.h"
 #include <ctime>
+#include "Logger.h"
 
-#define RWND 8
-#define BUFFER_SIZE RWND * 500
+#define RWND 16
 #define MSS 500
 #define TIMEOUT_DELAY_SEC 1
 class ConnectionInstance
@@ -15,8 +15,11 @@ private:
     uint32_t curr_seq_no;
     int connection_sockfd;
     struct sockaddr_storage their_addr;
-    double loss_prob;
+    double loss_prob, corrupt_prob;
+    Logger logger;
     uint32_t duplicate_ack = 0;
+    uint32_t last_packet_size = 0;
+
     uint32_t CWND = 1;
     uint32_t packets_sent;
     bool three_duplicate = false;
@@ -50,7 +53,9 @@ public:
      * @param port the port to listen on
      * @param seed used for simulation
      * */
-    ConnectionInstance(time_t seconds, const char *port, char **filename, long seed, double loss_prob);
+
+    ConnectionInstance(time_t seconds, const char *port, char **filename, long seed, double prob, double corrupt_prob,
+                       const Logger &logger);
     ~ConnectionInstance();
     void tcp_send(void *data, int length, bool is_last);
     void tcp_receive_ack(int number_of_acks);

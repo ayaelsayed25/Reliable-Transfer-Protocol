@@ -6,12 +6,12 @@ void pack_packet(
         uint8_t *data,
         uint16_t len,
         bool is_last,
-        uint32_t seq_no){
+        uint32_t seq_no) {
 
     /* The idea is to pack the is_last bit in the
      * length field of the packet, since 7 bits of it are not used anyway */
 
-    if (len > 500){
+    if (len > 500) {
         fprintf(stderr, "Length of data to end exceeds 500 %d\n", len);
         exit(1);
     }
@@ -26,14 +26,24 @@ void pack_packet(
     if (data != nullptr)
         memcpy(packet->data, data, len);
 
-    /* Calculate checksum
+    /* Calculate checksum */
     // TODO wrap around
-    uint16_t checksum = 0;
-    uint16_t *pack_arr = (uint16_t *)&packet;
-    for (int i = 0; i < len + 8; i++)
-        checksum += htons(pack_arr[i]);
+    uint32_t sum = 0;
+    uint16_t checksum;
+    int bytes = len + 8;
+    uint16_t *pack_arr = (uint16_t *) packet;
+    for (int i = 0; i < bytes / 2; i++) {
+        //printf("%x\n", ntohs(pack_arr[i]));
+        sum += ntohs(pack_arr[i]);
+    }
+    if (bytes & 1) { //a byte remains
+        //printf("%x\n",(uint16_t) (((uint8_t *) pack_arr)[bytes - 1]));
+        sum += (uint16_t) (((uint8_t *) pack_arr)[bytes - 1]);
+    }
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    checksum = sum;
     checksum = ~checksum;
-    packet->checksum = htons(checksum);*/
+    packet->checksum = htons(checksum);
 }
 
 
@@ -47,15 +57,24 @@ void parse_packet(struct packet *packet,
         exit(-1);
     }
 
-    /* Checksum TODO wrap around and ntoh
-    uint16_t checksum = 0;
+    // Checksum TODO wrap around and ntoh
+    uint32_t sum = 0;
+    int bytes = len;
     uint16_t *arr = (uint16_t *) buf;
-    for(int i = 0; i < len; i++)
-        checksum += ntohs(arr[i]);
-    if (~checksum){
+    for(int i = 0; i < bytes / 2; i++) {
+        //printf("%x\n", ntohs(arr[i]));
+        sum += ntohs(arr[i]);
+    }
+    if (bytes & 1) {
+        //printf("%x\n",(uint16_t) (((uint8_t *) arr)[bytes - 1]));
+        sum += (uint16_t) (((uint8_t *) arr)[bytes - 1]);
+    }
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    if ((uint16_t)~sum){
         *is_corrupt = true;
+        printf("corrupt packet\n");
         return;
-    }*/
+    }
     *is_corrupt = false;
 
     struct packet * received = (struct packet *)buf;

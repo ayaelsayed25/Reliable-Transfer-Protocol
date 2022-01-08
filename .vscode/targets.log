@@ -8,7 +8,7 @@ make: *** No rule to make target 'all'.  Stop.
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sat Jan  8 07:28:21 2022
+# Make data base, printed on Sat Jan  8 17:48:43 2022
 
 # Variables
 
@@ -123,7 +123,7 @@ XDG_SESSION_DESKTOP = ubuntu
 # environment
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 99840
+GIO_LAUNCHED_DESKTOP_FILE_PID = 135396
 # automatic
 %F = $(notdir $%)
 # environment
@@ -189,7 +189,7 @@ SHLVL = 0
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-3bc8dbc6-9882-4089-bc90-a1aa49f16800.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-3a935fbd-6f96-4a3c-b0b5-ca2c5a062849.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -273,7 +273,7 @@ LC_ADDRESS = ar_EG.UTF-8
 # environment
 LANG = C
 # environment
-VSCODE_PID = 99884
+VSCODE_PID = 135439
 # variable set hash-table stats:
 # Load=131/1024=13%, Rehash=0, Collisions=24/153=16%
 
@@ -283,9 +283,9 @@ VSCODE_PID = 99884
 
 # Directories
 
-# . (device 66310, inode 8271014): 6 files, no impossibilities.
+# . (device 66310, inode 8271014): 7 files, no impossibilities.
 
-# 6 files, no impossibilities in 1 directories.
+# 7 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -306,7 +306,6 @@ Makefile:
 #  File does not exist.
 #  File has been updated.
 #  Failed to be updated.
- 
 
 # Not a target:
 makefile:
@@ -336,12 +335,13 @@ GNUmakefile:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 14 / storage = 114 B / avg = 8 B
-# current buf: size = 8162 B / used = 114 B / count = 14 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 15 / storage = 123 B / avg = 8 B
+# current buf: size = 8162 B / used = 123 B / count = 15 / avg = 8 B
 
-# strcache performance: lookups = 17 / hit rate = 17%
+# strcache performance: lookups = 18 / hit rate = 16%
 # hash-table stats:
-# Load=14/8192=0%, Rehash=0, Collisions=1/17=6%
-# Finished Make data base on Sat Jan  8 07:28:21 2022
+ 
+# Load=15/8192=0%, Rehash=0, Collisions=1/18=6%
+# Finished Make data base on Sat Jan  8 17:48:43 2022
 
  

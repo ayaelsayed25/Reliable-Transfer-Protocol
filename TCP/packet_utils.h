@@ -11,13 +11,12 @@
 #define MAX_PACKET_SIZE 508
 #define HEADER_SIZE 8
 
-struct packet
-{
-        uint16_t checksum; /* Checksum */
-        uint16_t len;      /* Length */
-        uint32_t seq_no;   /* Sequence number, in ACK this is the ACK'ed packet */
-        uint8_t data[500]; /* Pointer to data if any */
-} __attribute__((packed));
+struct packet{
+    uint16_t checksum;          /* Checksum */
+    uint16_t len;               /* Length */
+    uint32_t seq_no;            /* Sequence number, in ACK this is the ACK'ed packet */
+    uint8_t  data[500];         /* Pointer to data if any */
+}__attribute__((packed));
 
 /**
  * Fills in packet in a serializable format and calculates checksum.
@@ -25,11 +24,11 @@ struct packet
  * @param data could be null if ACK packet
  * */
 void pack_packet(
-    struct packet *packet,
-    uint8_t *data,
-    uint16_t len,
-    bool is_last,
-    uint32_t seq_no);
+        struct packet *packet,
+        uint8_t *data,
+        uint16_t len,
+        bool is_last,
+        uint32_t seq_no);
 
 /**
  * Parses the payload received form the other side.
@@ -39,10 +38,10 @@ void pack_packet(
  * @param buf the buffer to parse
  * @param len the TOTAL length of the received packet */
 void parse_packet(struct packet *packet,
-                  bool *is_corrupt,
-                  bool *is_last,
-                  void *buf,
-                  int len);
+        bool *is_corrupt,
+        bool *is_last,
+        void *buf,
+        int len);
 
 /**
  * Prints the packet, which is in serialisable format,

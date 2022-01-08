@@ -4,7 +4,6 @@
 #include "ConnectionInstance.h"
 #include <stdlib.h>
 #include <fstream>
-
 unsigned int b = 0;
 
 void *ConnectionInstance ::get_in_addr(struct sockaddr *sa)
@@ -58,9 +57,14 @@ void ConnectionInstance ::setup_socket(struct addrinfo *ret_p, int *listener_soc
     freeaddrinfo(servinfo);
 }
 
-ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char **filename, long seed, double prob) : connection_sockfd(-1),
-                                                                                                                     curr_seq_no(0),
-                                                                                                                     loss_prob(prob)
+ConnectionInstance::ConnectionInstance(time_t seconds, const char *port,
+                                       char **filename, long seed,
+                                       double prob, double corrupt_prob,
+                                       const Logger &logger) : connection_sockfd(-1),
+                                                               curr_seq_no(0),
+                                                               loss_prob(prob),
+                                                               corrupt_prob(corrupt_prob),
+                                                               logger(logger)
 {
 
     /* Set up RNG*/
@@ -124,17 +128,14 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
     connection_sockfd = listener_sockfd;
 
     inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
-    printf("connecting to %s\n", s);
-
-    /*connection_sockfd = socket(p.ai_family, p.ai_socktype, p.ai_protocol);
-    if (connection_sockfd == -1){
-        perror("child: socket");
-        exit(1);
-    }*/
+    // printf("connecting to %s\n", s);
+    printf("fmmm");
 
     /* Set timeout */
     tv.tv_sec = 0;
     tv.tv_usec = 500;
+    printf("filkkkkkkkkkk");
+
     /*if(bind(connection_sockfd, p.ai_addr, p.ai_addrlen) == -1){
         close(connection_sockfd);
         perror("child: bind");
@@ -149,9 +150,9 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
 
     //begin sending file
     FILE *in = fopen(*filename, "r");
+    printf("fileeeee");
     int num_read;
     uint8_t packet[MSS];
-    uint32_t last_packet_size = 0;
 
     fseek(in, 0L, SEEK_END);
     int file_size = ftell(in);
@@ -181,6 +182,7 @@ ConnectionInstance ::ConnectionInstance(time_t seconds, const char *port, char *
         //after window
 
         printf("\nEnd of window\n\n");
+
         tcp_receive_ack(window);
     }
     fclose(in);
@@ -198,21 +200,33 @@ void ConnectionInstance ::tcp_send(void *data, int len, bool is_last)
     {
     };
     pack_packet(&send_packet, (uint8_t *)data, len, is_last, curr_seq_no);
-    // TODO corruption
-    double prob = drand48();
-    // printf("Should loss happen? %f\n", prob);
-    if (prob <= loss_prob)
+
+    double prob_loss = drand48();
+    printf("Should loss happen? %s\n", (prob_loss < loss_prob) ? "true" : "false");
+    if (prob_loss > this->loss_prob)
     {
-        printf("Dropping packet %d\n", curr_seq_no);
+        double prob_corrupt = drand48();
+        uint16_t original_checksum = send_packet.checksum; // save correct checksum
+        printf("Should corruption happen? %s\n", (prob_corrupt < corrupt_prob) ? "true" : "false");
+        if (prob_corrupt < corrupt_prob)
+        {
+            //change checksum
+            send_packet.checksum++;
+        }
+
+        // send
+        logger.logTransmission(curr_seq_no);
+        if (send(connection_sockfd, &send_packet, len + HEADER_SIZE, 0) == -1)
+        {
+            perror("send");
+        }
+        send_packet.checksum = original_checksum; // return checksum as it was
     }
     else
     {
-        printf("sending packet %d\n", curr_seq_no);
+        logger.logLoss(curr_seq_no);
     }
-    if (prob > loss_prob && send(connection_sockfd, &send_packet, len + HEADER_SIZE, 0) == -1)
-    {
-        perror("send");
-    }
+
     next_seq_no();
 }
 
@@ -243,18 +257,12 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
 
         if (numbytes == -1)
         {
-            //timeout
-            // perror("recv");
             break;
         }
         else
         {
             bool is_corrupt;
             parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
-            // if (state == 0)
-            // {
-            //     CWND += 1;
-            // }
             acks_received++;
         }
     }
@@ -262,10 +270,19 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
     uint16_t expected = end - start;
     uint16_t received = recv_packet.seq_no - start + 1;
+
+    uint16_t counter = start;
+    for (int i = 0; i < received; i++)
+    {
+        logger.logACK(counter, (counter == packets_sent - 1 ? last_packet_size : MSS) + HEADER_SIZE);
+        counter++;
+    }
     //timeout
     if (acks_received == 0)
     {
         printf("TIMEOUT\n");
+        logger.logTimeout(curr_seq_no);
+
         ssthresh = CWND / 2;
         CWND = 1;
         state = 0;
@@ -273,7 +290,7 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     //3 duplicate ack
     else if (expected - received >= 3)
     {
-        if (state = 0 || state == 1)
+        if (state == 0 || state == 1)
         {
             state = 2;
             ssthresh = CWND / 2;
@@ -283,14 +300,15 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     }
     else
     {
-        if(state == 0){
+        if (state == 0)
+        {
             CWND += acks_received;
         }
         else if (state == 1)
             CWND++;
-        else if(state == 2)
+        else if (state == 2)
         {
-            if(acks_received - received > 0)
+            if (acks_received - received > 0)
             {
                 CWND += acks_received;
             }
@@ -299,23 +317,22 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
                 CWND = ssthresh;
                 state = 1;
             }
-        }//duplicate acks
+        } //duplicate acks
     }
-    if(state == 0 && CWND >= ssthresh)
+    if (state == 0 && CWND >= ssthresh)
         state = 1;
 
     printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
     printf("expected %d, received %d\n", expected, received);
     //update cwnd
     window = CWND < RWND ? CWND : RWND;
-    //is_corrupt is discarded from client ??
-    // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
     //update congestion window, start, end
     start = recv_packet.seq_no + 1;
     curr_seq_no = start;
     end = start + window;
     end = packets_sent < end ? packets_sent : end;
     b += received;
+    logger.advanceRound();
 }
 
 ConnectionInstance ::~ConnectionInstance()

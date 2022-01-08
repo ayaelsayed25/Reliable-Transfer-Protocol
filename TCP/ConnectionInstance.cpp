@@ -239,32 +239,32 @@ void ConnectionInstance::tcp_receive_ack()
     struct packet recv_packet
     {
     };
-    uint8_t numbytes = recv(connection_sockfd, buf, MAX_PACKET_SIZE, 0);
-
-    if (numbytes == -1)
+    uint8_t numbytes;
+    while ((numbytes = recv(connection_sockfd, buf, MAX_PACKET_SIZE, 0)) != -1)
     {
-        //timeout
-        perror("recv");
+        printf("HOLA");
     }
-    else
-    {
-        bool is_corrupt;
-        parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
-        //is_corrupt is discarded from client ??
-        // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
-        printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
-        uint16_t expected = end - start;
-        uint16_t received = recv_packet.seq_no - start + 1;
+    printf("HMMM");
 
-        printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
-        printf("expected %d, received %d\n", expected, received);
+    // //timeout
+    // perror("recv");
 
-        //update congestion window, start, end
-        start = recv_packet.seq_no;
-        curr_seq_no = start;
-        end = start + CWND;
-        b += received;
-    }
+    bool is_corrupt;
+    parse_packet(&recv_packet, &is_corrupt, nullptr, buf, numbytes);
+    //is_corrupt is discarded from client ??
+    // if (is_corrupt || recv_packet.seq_no != curr_seq_no)
+    printf("received packet %d, b = %d\n", recv_packet.seq_no, b);
+    uint16_t expected = end - start;
+    uint16_t received = recv_packet.seq_no - start + 1;
+
+    printf("recv_packet.seq_no: %d, start: %d, end:%d\n", recv_packet.seq_no, start, end);
+    printf("expected %d, received %d\n", expected, received);
+
+    //update congestion window, start, end
+    start = recv_packet.seq_no + 1;
+    curr_seq_no = start;
+    end = start + CWND;
+    b += received;
 }
 
 // void ConnectionInstance::timer_handler()

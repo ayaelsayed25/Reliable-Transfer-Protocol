@@ -128,13 +128,11 @@ ConnectionInstance::ConnectionInstance(time_t seconds, const char *port,
     connection_sockfd = listener_sockfd;
 
     inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
-    // printf("connecting to %s\n", s);
-    printf("fmmm");
+    printf("connecting to %s\n", s);
 
     /* Set timeout */
     tv.tv_sec = 0;
-    tv.tv_usec = 500;
-    printf("filkkkkkkkkkk");
+    tv.tv_usec = 1000;
 
     /*if(bind(connection_sockfd, p.ai_addr, p.ai_addrlen) == -1){
         close(connection_sockfd);
@@ -150,7 +148,6 @@ ConnectionInstance::ConnectionInstance(time_t seconds, const char *port,
 
     //begin sending file
     FILE *in = fopen(*filename, "r");
-    printf("fileeeee");
     int num_read;
     uint8_t packet[MSS];
 
@@ -161,7 +158,6 @@ ConnectionInstance::ConnectionInstance(time_t seconds, const char *port,
     last_packet_size = file_size % MSS;
     if (last_packet_size > 0)
         packets_sent++;
-    printf("laaaaast size %d\n", last_packet_size);
     printf("File size is %d bytes,, Sending it in %d packets \n", file_size, packets_sent);
     //GO-BACK-N
     //buffer iterator
@@ -247,6 +243,7 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
         perror("setsockopt");
         exit(1);
     }
+
     void *buf[MAX_PACKET_SIZE];
     struct packet recv_packet
     {
@@ -254,9 +251,12 @@ void ConnectionInstance::tcp_receive_ack(int number_of_acks)
     recv_packet.seq_no = start - 1;
     u_int32_t acks_received = 0;
     uint8_t numbytes;
+
     for (int i = 0; i < number_of_acks; i++)
     {
+
         numbytes = recv(connection_sockfd, buf, MAX_PACKET_SIZE, 0);
+        printf("\nHEYY2, %d\n", numbytes);
 
         if (numbytes == -1)
         {

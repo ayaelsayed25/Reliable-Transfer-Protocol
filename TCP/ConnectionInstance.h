@@ -6,7 +6,7 @@
 #include <ctime>
 #include "Logger.h"
 
-#define RWND 8
+#define RWND 600
 #define MSS 500
 #define TIMEOUT_DELAY_SEC 1
 class ConnectionInstance
